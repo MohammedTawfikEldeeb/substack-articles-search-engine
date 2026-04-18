@@ -1,27 +1,45 @@
-from pydantic import BaseModel , Field , SecretStr , model_validator
-from pydantic_settings import BaseSettings , SettingsConfigDict
+from pathlib import Path
 from typing import ClassVar
 
+import yaml
+from pydantic import BaseModel, Field, SecretStr, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from src.models.article_models import FeedItem
+
 class SupabaseDBSettings(BaseModel):
-    table_name : str = Field(default="substack_articles" , description="supabase table name")
-    host: str = Field(default="localhost" , description="supabase db host")
-    port: int = Field(default=6543 , description="supabase db port")
-    user: str = Field(default="postgres" , description="supabase db user")
-    password: SecretStr = Field(default=SecretStr("password") , description="sipabase db password")
-    name: str = Field(default="postgres" , description="supabase db name")
+    table_name: str = Field(default="substack_articles", description="supabase table name")
+    host: str = Field(default="localhost", description="supabase db host")
+    port: int = Field(default=6543, description="supabase db port")
+    user: str = Field(default="postgres", description="supabase db user")
+    password: SecretStr = Field(
+        default=SecretStr("password"),
+        description="supabase db password",
+    )
+    name: str = Field(default="postgres", description="supabase db name")
 
 
 class QdrantSettings(BaseModel):
     pass
 
-class RSSSettings(BaseSettings):
-    pass
-
+class RSSSettings(BaseModel):
+    feeds: list[FeedItem] = Field(
+        default_factory=list[FeedItem], description="List of RSS feed items"
+    )
+    default_start_date: str = Field(default="2025-09-15", description="Default cutoff date")
+    request_timeout_seconds: int = Field(
+        default=15, description="HTTP timeout for RSS feed requests in seconds"
+    )
+    max_description_length: int = Field(
+        default=10000, description="Maximum RSS description/content length to keep"
+    )
+    batch_size: int = Field(
+        default=5, description="Number of articles to parse and ingest in a batch"
+    )
 class Settings(BaseSettings):
     supabase_db: SupabaseDBSettings = Field(default_factory=SupabaseDBSettings)
     qdrant: QdrantSettings = Field(default_factory=QdrantSettings)
     rss: RSSSettings = Field(default_factory=RSSSettings)
-    
+
     rss_config_yaml_path: str = "src/configs/feeds_rss.yaml"
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         env_file=[".env"],
@@ -31,6 +49,33 @@ class Settings(BaseSettings):
         case_sensitive=False,
         frozen=True,
     )
+
+    @model_validator(mode="after")
+    def hydrate_rss_settings(self) -> "Settings":
+        config_path = Path(self.rss_config_yaml_path)
+        if not config_path.exists():
+            return self
+
+        with config_path.open("r", encoding="utf-8") as handle:
+            raw = yaml.safe_load(handle) or {}
+
+        if not isinstance(raw, dict):
+            raise ValueError("RSS config YAML must contain a mapping at the top level")
+
+        rss_settings = RSSSettings(
+            batch_size=raw.get("batch_size", self.rss.batch_size),
+            request_timeout_seconds=raw.get(
+                "request_timeout_seconds",
+                self.rss.request_timeout_seconds,
+            ),
+            max_description_length=raw.get(
+                "max_description_length",
+                self.rss.max_description_length,
+            ),
+            feeds=raw.get("feeds", []),
+        )
+        object.__setattr__(self, "rss", rss_settings)
+        return self
 
 
 settings = Settings()

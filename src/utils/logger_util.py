@@ -4,48 +4,26 @@ from typing import Any
 
 import psutil
 from loguru import logger as loguru_logger
-from prefect.context import get_run_context
-from prefect.logging import get_run_logger
 
 
 def setup_logging(log_level: str | None = None):
-    """Returns a logger configured for the current environment.
+    """Return a project-wide Loguru logger."""
 
-    - Inside Prefect flow/task: Prefect's run logger (`logging.Logger`).
-    - Outside Prefect: Loguru logger.
-
-    Args:
-        log_level (str | None): Logging level to use (DEBUG, INFO, WARNING, ERROR).
-                                 Defaults to LOG_LEVEL env variable or DEBUG.
-
-    Returns:
-        logging.Logger | loguru.Logger: Configured logger instance.
-
-    """
     log_level = log_level or os.getenv("LOG_LEVEL", "DEBUG").upper()
 
-    try:
-        # Inside Prefect
-        get_run_context()
-        logger = get_run_logger()
-        logger.setLevel(log_level)
-        logger.debug(f"Logging initialized at {log_level} level (Prefect).")
-        return logger
-    except RuntimeError:
-        # Outside Prefect → Loguru
-        loguru_logger.remove()
-        loguru_logger.add(
-            sys.stdout,
-            level=log_level,
-            colorize=True,
-            backtrace=True,
-            diagnose=True,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-            "<level>{level}</level> | <cyan>{module}</cyan>:<cyan>{function}</cyan> - "
-            "<level>{message}</level>",
-        )
-        loguru_logger.debug(f"Logging initialized at {log_level} level (Loguru).")
-        return loguru_logger
+    loguru_logger.remove()
+    loguru_logger.add(
+        sys.stdout,
+        level=log_level,
+        colorize=True,
+        backtrace=True,
+        diagnose=True,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level}</level> | <cyan>{module}</cyan>:<cyan>{function}</cyan> - "
+        "<level>{message}</level>",
+    )
+    loguru_logger.debug(f"Logging initialized at {log_level} level (Loguru).")
+    return loguru_logger
 
 
 def log_batch_status(
@@ -56,20 +34,8 @@ def log_batch_status(
     total_chunks: int | None = None,
     context: str = "",
 ) -> str:
-    """Log batch action details along with current process and system memory usage.
+    """Log batch action details along with current process and system memory usage."""
 
-    Args:
-        logger (Any): Logger instance to use (Prefect or Loguru).
-        action (str): Action description (e.g., 'Ingested', 'Parsed').
-        batch_size (int): Number of items in the batch.
-        total_articles (int | None): Total articles processed so far.
-        total_chunks (int | None): Total chunks processed so far.
-        context (str, optional): Additional context info.
-
-    Returns:
-        str: Formatted log string (useful for testing).
-
-    """
     process = psutil.Process()
     mem = process.memory_info()
     rss_mb = mem.rss / 1024 / 1024

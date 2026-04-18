@@ -1,10 +1,10 @@
 feeds:
-- name: “AI Echoes”
-  author: “Benito Martin”
-  url: “https://aiechoes.substack.com/feed”
-- name: “Decoding ML”
-  author: “Paul Iusztin”
-  url: “https://decodingml.substack.com/feed”
-- name: “The Neural Maze”
-  author: “Miguel Otero”
-  url: “https://theneuralmaze.substack.com/feed”
+  - name: "AI Echoes"
+    author: "Benito Martin"
+    url: "https://aiechoes.substack.com/feed"
+  - name: "Decoding ML"
+    author: "Paul Iusztin"
+    url: "https://decodingml.substack.com/feed"
+  - name: "The Neural Maze"
+    author: "Miguel Otero"
+    url: "https://theneuralmaze.substack.com/feed"

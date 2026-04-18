@@ -3,13 +3,22 @@ name = "substack-articles-search-engine"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
+    "beautifulsoup4==4.13.4",
+    "lxml==5.4.0",
     "loguru==0.7.3",
-    "prefect==3.6.26",
+    "markdownify==1.1.0",
+    "python-dateutil==2.9.0.post0",
     "psutil==7.2.2",
     "psycopg2-binary==2.9.11",
-    "pydantic==2.13.2",
+    "pydantic==2.12.5",
     "pydantic-settings==2.13.1",
+    "requests==2.32.5",
+    "pyyaml==6.0.3",
     "sqlalchemy==2.0.49",
+    "prefect==3.6.27",
+    "apache-airflow==3.2.0",
+    "langchain-text-splitters==1.1.2",
+    "qdrant-client==1.17.1",
 ]
