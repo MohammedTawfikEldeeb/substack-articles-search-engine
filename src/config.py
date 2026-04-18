@@ -19,7 +19,26 @@ class SupabaseDBSettings(BaseModel):
 
 
 class QdrantSettings(BaseModel):
-    pass
+    url: str = Field(default="", description="Qdrant API URL")
+    api_key: str = Field(default="", description="Qdrant API key")
+    collection_name: str = Field(
+        default="substack_collection", description="Qdrant collection name"
+    )
+    dense_model_name: str = Field(default="BAAI/bge-base-en", description="Dense model name")
+    sparse_model_name: str = Field(
+        default="Qdrant/bm25", description="Sparse model name"
+    )  # prithivida/Splade_PP_en_v1 (larger)
+    vector_dim: int = Field(
+        default=768,
+        description="Vector dimension",
+    )
+    article_batch_size: int = Field(
+        default=5, description="Number of articles to parse and ingest in a batch"
+    )
+    sparse_batch_size: int = Field(default=32, description="Sparse batch size")
+    embed_batch_size: int = Field(default=50, description="Dense embedding batch")
+    upsert_batch_size: int = Field(default=50, description="Batch size for Qdrant upsert")
+    max_concurrent: int = Field(default=2, description="Maximum number of concurrent tasks")
 
 class RSSSettings(BaseModel):
     feeds: list[FeedItem] = Field(
@@ -35,11 +54,39 @@ class RSSSettings(BaseModel):
     batch_size: int = Field(
         default=5, description="Number of articles to parse and ingest in a batch"
     )
+
+class TextSplitterSettings(BaseModel):
+    chunk_size: int = Field(default=4000, description="Size of text chunks")
+    chunk_overlap: int = Field(default=200, description="Size of text chunks")
+    separators: list[str] = Field(
+        default_factory=lambda: [
+            "\n---\n",
+            "\n\n",
+            "\n```\n",
+            "\n## ",
+            "\n# ",
+            "\n**",
+            "\n",
+            ". ",
+            "! ",
+            "? ",
+            " ",
+            "",
+        ],
+        description="List of separators for text splitting. The order or separators matter",
+    )
+class HuggingFaceSettings(BaseModel):
+    api_key: str = Field(default="", description="Hugging Face API key")
+    model: str = Field(default="BAAI/bge-base-en-v1.5", description="Hugging Face model name")
+
+
+
 class Settings(BaseSettings):
     supabase_db: SupabaseDBSettings = Field(default_factory=SupabaseDBSettings)
     qdrant: QdrantSettings = Field(default_factory=QdrantSettings)
     rss: RSSSettings = Field(default_factory=RSSSettings)
-
+    hugging_face: HuggingFaceSettings = Field(default_factory=HuggingFaceSettings)
+    text_splitter: TextSplitterSettings = Field(default_factory=TextSplitterSettings)
     rss_config_yaml_path: str = "src/configs/feeds_rss.yaml"
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         env_file=[".env"],

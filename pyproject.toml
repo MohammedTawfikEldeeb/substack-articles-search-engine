@@ -21,4 +21,6 @@ dependencies = [
     "apache-airflow==3.2.0",
     "langchain-text-splitters==1.1.2",
     "qdrant-client==1.17.1",
+    "fastembed==0.8.0",
+    "huggingface-hub==1.11.0",
 ]
