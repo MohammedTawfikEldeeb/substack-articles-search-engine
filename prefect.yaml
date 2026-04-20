@@ -1,8 +1,8 @@
 pull:
 - prefect.deployments.steps.git_clone:
     id: clone-step
-    repository: https://github.com/benitomartin/substack-newsletters-search-course
-    credentials: "{{ prefect.blocks.github-credentials.my-gh-creds }}"
+    repository: https://github.com/MohammedTawfikEldeeb/substack-articles-search-engine
+    credentials: "{{ prefect.blocks.github-credentials.my-github-creds }}"
 
 - prefect.deployments.steps.run_shell_script:
     id: install-pip
