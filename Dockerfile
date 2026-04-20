@@ -9,10 +9,8 @@ ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_DOWNLOADS=never
 
 # Copy dependency files and sync dependencies
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project --no-dev
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-install-project --no-dev
 
 # Copy source code selectively
 COPY src/api ./src/api
@@ -25,8 +23,7 @@ COPY src/utils ./src/utils
 COPY pyproject.toml uv.lock README.md ./
 
 # Install project dependencies into virtualenv
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev
+RUN uv sync --locked --no-dev
 
 
 # ---------- Runtime Stage ----------
@@ -46,10 +43,10 @@ ENV PORT=8080
 RUN mkdir -p $HF_HOME $FASTEMBED_CACHE && chmod -R 755 $HF_HOME $FASTEMBED_CACHE
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:$PORT/health || exit 1
+    CMD python -c "import os,urllib.request;urllib.request.urlopen(f'http://localhost:{os.getenv(\"PORT\",\"8080\")}/health')"
 
 # Expose Cloud Run port
 EXPOSE $PORT
 
-# Run FastAPI with uvicorn
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1", "--loop", "uvloop"]
+# Run FastAPI with uvicorn on Railway-provided PORT
+CMD ["sh", "-c", "uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --loop uvloop"]
