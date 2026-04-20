@@ -1,6 +1,8 @@
 import asyncio
 import gc
 import hashlib
+import os
+import shutil
 import time
 import uuid
 from collections.abc import AsyncGenerator
@@ -30,6 +32,20 @@ from src.utils.logger_util import log_batch_status, setup_logging
 from src.utils.text_splitter import TextSplitter
 
 
+def _is_missing_special_tokens_error(exc: Exception) -> bool:
+    msg = str(exc)
+    return "Could not find special_tokens_map.json" in msg
+
+
+def _reset_cache_dir(cache_dir: str | None, logger) -> None:
+    if not cache_dir:
+        return
+    if os.path.isdir(cache_dir):
+        logger.warning(f"Resetting corrupted fastembed cache at: {cache_dir}")
+        shutil.rmtree(cache_dir, ignore_errors=True)
+    os.makedirs(cache_dir, exist_ok=True)
+
+
 class AsyncQdrantVectorStore:
     """Manages asynchronous interactions with Qdrant vector store for article ingestion.
 
@@ -49,18 +65,36 @@ class AsyncQdrantVectorStore:
     def __init__(self, cache_dir: str | None = None):
         """Initialize AsyncQdrantVectorStore with Qdrant client and embedding models."""
         vector_db = settings.qdrant
+        self.logger = setup_logging()
 
         # -------------------------------
         # Models & configs
         # -------------------------------
-        self.dense_model = TextEmbedding(
-            model_name=vector_db.dense_model_name,
-            cache_dir=cache_dir,  # Only uses cache_dir if provided
-        )
-        self.sparse_model = SparseTextEmbedding(
-            model_name=vector_db.sparse_model_name,
-            cache_dir=cache_dir,  # Only uses cache_dir if provided
-        )
+        try:
+            self.dense_model = TextEmbedding(
+                model_name=vector_db.dense_model_name,
+                cache_dir=cache_dir,  # Only uses cache_dir if provided
+            )
+            self.sparse_model = SparseTextEmbedding(
+                model_name=vector_db.sparse_model_name,
+                cache_dir=cache_dir,  # Only uses cache_dir if provided
+            )
+        except ValueError as exc:
+            if not _is_missing_special_tokens_error(exc):
+                raise
+
+            self.logger.warning(
+                "Detected broken fastembed model snapshot. Clearing cache and retrying once."
+            )
+            _reset_cache_dir(cache_dir, self.logger)
+            self.dense_model = TextEmbedding(
+                model_name=vector_db.dense_model_name,
+                cache_dir=cache_dir,
+            )
+            self.sparse_model = SparseTextEmbedding(
+                model_name=vector_db.sparse_model_name,
+                cache_dir=cache_dir,
+            )
         self.embedding_size = vector_db.vector_dim
         self.sparse_batch_size = vector_db.sparse_batch_size
         self.article_batch_size = vector_db.article_batch_size
@@ -88,7 +122,6 @@ class AsyncQdrantVectorStore:
         # -------------------------------
         # Logging
         # -------------------------------
-        self.logger = setup_logging()
         self.log_batch_status = partial(log_batch_status, self.logger)
 
         # -------------------------------

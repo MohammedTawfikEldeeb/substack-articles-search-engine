@@ -33,3 +33,18 @@ qdrant-ingest-from-sql: ## Ingest data from SQL to Qdrant
 	@echo "Ingesting data from SQL to Qdrant..."
 	uv run python -m src.infrastructure.qdrant.ingest_from_sql
 	@echo "Data ingestion complete."
+
+run-api: ## Run FastAPI application
+	@echo "Starting FastAPI application..."
+	uv run -m src.api.main
+	@echo "FastAPI application stopped."
+
+clean-fastembed-cache: ## Clear potentially corrupted fastembed cache
+	@echo "Clearing fastembed cache..."
+	uv run python -c "import os, shutil, tempfile; paths=['/tmp/fastembed_cache', os.path.join(tempfile.gettempdir(), 'fastembed_cache')]; [shutil.rmtree(p, ignore_errors=True) for p in paths if os.path.isdir(p)]; print('Cleared:', paths)"
+	@echo "Fastembed cache clear complete."
+
+run-react: ## Run React frontend
+	@echo "Starting React frontend..."
+	cd frontend && npm install && npm run dev
+	@echo "React frontend stopped."

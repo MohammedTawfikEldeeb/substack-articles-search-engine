@@ -80,6 +80,17 @@ class HuggingFaceSettings(BaseModel):
     model: str = Field(default="BAAI/bge-base-en-v1.5", description="Hugging Face model name")
 
 
+class OpenRouterSettings(BaseModel):
+    api_key: str = Field(default="", description="OpenRouter API key")
+    api_url: str = Field(default="https://openrouter.ai/api/v1", description="OpenRouter API URL")
+
+
+
+class OpikObservabilitySettings(BaseModel):
+    api_key: str = Field(default="", description="Opik Observability API key")
+    project_name: str = Field(default="substack-pipeline", description="Opik project name")
+
+
 
 class Settings(BaseSettings):
     supabase_db: SupabaseDBSettings = Field(default_factory=SupabaseDBSettings)
@@ -87,6 +98,8 @@ class Settings(BaseSettings):
     rss: RSSSettings = Field(default_factory=RSSSettings)
     hugging_face: HuggingFaceSettings = Field(default_factory=HuggingFaceSettings)
     text_splitter: TextSplitterSettings = Field(default_factory=TextSplitterSettings)
+    openrouter: OpenRouterSettings = Field(default_factory=OpenRouterSettings)
+    opik: OpikObservabilitySettings = Field(default_factory=OpikObservabilitySettings)
     rss_config_yaml_path: str = "src/configs/feeds_rss.yaml"
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         env_file=[".env"],

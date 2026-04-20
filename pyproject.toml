@@ -23,4 +23,6 @@ dependencies = [
     "qdrant-client==1.17.1",
     "fastembed==0.8.0",
     "huggingface-hub==1.11.0",
+    "opik==2.0.2",
+    "gradio==6.12.0",
 ]
