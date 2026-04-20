@@ -1,14 +1,14 @@
 pull:
 - prefect.deployments.steps.git_clone:
     id: clone-step
-    repository: https://github.com/MohammedTawfikEldeeb/substack-articles-search-engine
+    repository: https://github.com/benitomartin/substack-newsletters-search-course
     credentials: "{{ prefect.blocks.github-credentials.my-github-creds }}"
 
 - prefect.deployments.steps.run_shell_script:
-    id: install-pip
-    directory: "{{ clone-step.directory }}"
+    id: install-build-tools
     script: |
-      python -m ensurepip --upgrade
+      apt-get update -y
+      apt-get install -y --no-install-recommends build-essential g++
 
 - prefect.deployments.steps.pip_install_requirements:
     directory: "{{ clone-step.directory }}"
