@@ -3,18 +3,25 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8080").replace(/\/$/, "");
+const FEEDS = [
+  { name: "Decoding ML", author: "Paul Iusztin" },
+  { name: "The Neural Maze", author: "Miguel Otero" },
+  { name: "The Machine Learning Engineer", author: "Alejandro Saucedo" },
+  { name: "Data Science Weekly", author: "Hannah & Sebastian" },
+  { name: "Machine Learning Pills", author: "David Andres" },
+  { name: "Ahead of AI", author: "Sebastian Raschka" },
+  { name: "One Useful Thing", author: "Ethan Mollick" },
+  { name: "Last Week in AI", author: "Davis Blalock" },
+  { name: "Import AI", author: "Jack Clark" },
+  { name: "Applied ML", author: "Gaurav Chakravorty" },
+  { name: "MLOps Newsletter", author: "Bugra Akyildiz" }
+];
+const FEED_AUTHORS = [...new Set(FEEDS.map((feed) => feed.author).filter(Boolean))].sort();
+const FEED_NAMES = [...new Set(FEEDS.map((feed) => feed.name).filter(Boolean))].sort();
 
 function noneIfEmpty(value) {
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
-}
-
-function parseCsv(value) {
-  const items = value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-  return items.length ? items : null;
 }
 
 function buildAskPayload(state) {
@@ -22,11 +29,9 @@ function buildAskPayload(state) {
     query_text: state.queryText,
     feed_author: noneIfEmpty(state.feedAuthor),
     feed_name: noneIfEmpty(state.feedName),
-    article_author: parseCsv(state.articleAuthors),
     title_keywords: noneIfEmpty(state.titleKeywords),
     limit: Number(state.limit),
-    provider: "openrouter",
-    model: noneIfEmpty(state.model)
+    provider: "openrouter"
   };
 }
 
@@ -37,9 +42,7 @@ export default function App() {
   const [queryText, setQueryText] = useState("RAG and agentic applications");
   const [feedAuthor, setFeedAuthor] = useState("");
   const [feedName, setFeedName] = useState("");
-  const [articleAuthors, setArticleAuthors] = useState("");
   const [titleKeywords, setTitleKeywords] = useState("");
-  const [model, setModel] = useState("");
   const [limit, setLimit] = useState(5);
 
   const [titlesResult, setTitlesResult] = useState(null);
@@ -84,10 +87,8 @@ export default function App() {
       queryText,
       feedAuthor,
       feedName,
-      articleAuthors,
       titleKeywords,
-      limit,
-      model
+      limit
     });
 
     try {
@@ -117,10 +118,8 @@ export default function App() {
       queryText,
       feedAuthor,
       feedName,
-      articleAuthors,
       titleKeywords,
-      limit,
-      model
+      limit
     });
 
     try {
@@ -183,7 +182,6 @@ export default function App() {
         <p className="subtitle">
           Explore search, ask non-streaming, and watch streaming answers in one focused interface.
         </p>
-        <p className="api-hint">Connected API: {API_BASE}</p>
       </header>
 
       <section className="tab-strip">
@@ -203,23 +201,25 @@ export default function App() {
             <div className="filters-grid">
               <div>
                 <label>Feed author</label>
-                <input value={feedAuthor} onChange={(e) => setFeedAuthor(e.target.value)} />
+                <select value={feedAuthor} onChange={(e) => setFeedAuthor(e.target.value)}>
+                  <option value="">All feed authors</option>
+                  {FEED_AUTHORS.map((author) => (
+                    <option key={author} value={author}>{author}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label>Feed name</label>
-                <input value={feedName} onChange={(e) => setFeedName(e.target.value)} />
-              </div>
-              <div>
-                <label>Article authors (CSV)</label>
-                <input value={articleAuthors} onChange={(e) => setArticleAuthors(e.target.value)} />
+                <select value={feedName} onChange={(e) => setFeedName(e.target.value)}>
+                  <option value="">All feed names</option>
+                  {FEED_NAMES.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label>Title keywords</label>
                 <input value={titleKeywords} onChange={(e) => setTitleKeywords(e.target.value)} />
-              </div>
-              <div>
-                <label>Model override</label>
-                <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="optional" />
               </div>
               <div>
                 <label>Limit</label>
