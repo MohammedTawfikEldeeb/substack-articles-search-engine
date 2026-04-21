@@ -16,6 +16,7 @@ from src.api.exceptions.exception_handlers import (
 from src.api.middleware.logging_middleware import LoggingMiddleware
 from src.api.routes.health_routes import router as health_router
 from src.api.routes.search_routes import router as search_router
+from src.api.services.semantic_cache_service import SemanticCacheService
 from src.infrastructure.qdrant.qdrant_vectorstore import AsyncQdrantVectorStore
 from src.utils.logger_util import setup_logging
 
@@ -37,6 +38,8 @@ async def lifespan(app: FastAPI):
     try:
         # creates Qdrant client internally
         app.state.vectorstore = AsyncQdrantVectorStore(cache_dir=cache_dir)
+        app.state.semantic_cache = SemanticCacheService(app.state.vectorstore)
+        await app.state.semantic_cache.ensure_collection()
     except Exception as e:
         logger.exception("Failed to initialize QdrantVectorStore")
         raise e

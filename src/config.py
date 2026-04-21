@@ -48,6 +48,20 @@ class QdrantSettings(BaseModel):
     max_concurrent: int = Field(
         default=2, description="Maximum number of concurrent tasks"
     )
+    semantic_cache_collection_name: str = Field(
+        default="semantic_cache", description="Qdrant semantic cache collection name"
+    )
+    semantic_cache_similarity_threshold: float = Field(
+        default=0.92,
+        description="Minimum cosine similarity score to accept semantic cache hits",
+    )
+    semantic_cache_ttl_seconds: int = Field(
+        default=3600, description="TTL for semantic cache entries in seconds"
+    )
+    semantic_cache_content_version: str = Field(
+        default="v1",
+        description="Content/index version used to invalidate semantic cache entries",
+    )
 
 
 class RSSSettings(BaseModel):
