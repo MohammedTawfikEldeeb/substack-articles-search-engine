@@ -186,5 +186,10 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# Frontend artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vercel/
+
 
 src/configs/all_feeds.yaml
