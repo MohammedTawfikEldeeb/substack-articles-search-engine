@@ -30,6 +30,18 @@ def _build_filter_signature(ask: AskRequest) -> str:
     return "|".join(parts)
 
 
+def _compact_source(source: SearchResult) -> dict:
+    # Keep source metadata small for cache payload safety.
+    return {
+        "title": source.title,
+        "feed_author": source.feed_author,
+        "feed_name": source.feed_name,
+        "article_author": source.article_author,
+        "url": source.url,
+        "score": source.score,
+    }
+
+
 @dataclass(slots=True)
 class SemanticCacheHit:
     answer: str
@@ -56,17 +68,21 @@ class SemanticCacheService:
         reason: str,
         score: float | None = None,
     ) -> None:
-        opik.update_current_span(
-            metadata={
-                "cache.hit": hit,
-                "cache.reason": reason,
-                "cache.score": score,
-                "cache.threshold": self.similarity_threshold,
-                "cache.content_version": self.content_version,
-                "cache.ttl_seconds": self.ttl_seconds,
-                "cache.collection": self.collection_name,
-            }
-        )
+        try:
+            opik.update_current_span(
+                metadata={
+                    "cache.hit": hit,
+                    "cache.reason": reason,
+                    "cache.score": score,
+                    "cache.threshold": self.similarity_threshold,
+                    "cache.content_version": self.content_version,
+                    "cache.ttl_seconds": self.ttl_seconds,
+                    "cache.collection": self.collection_name,
+                }
+            )
+        except Exception:
+            # Never let observability break serving path.
+            pass
 
     def _update_save_span(
         self,
@@ -75,16 +91,20 @@ class SemanticCacheService:
         reason: str,
         source_count: int,
     ) -> None:
-        opik.update_current_span(
-            metadata={
-                "cache.write_success": write_success,
-                "cache.write_reason": reason,
-                "cache.source_count": source_count,
-                "cache.content_version": self.content_version,
-                "cache.ttl_seconds": self.ttl_seconds,
-                "cache.collection": self.collection_name,
-            }
-        )
+        try:
+            opik.update_current_span(
+                metadata={
+                    "cache.write_success": write_success,
+                    "cache.write_reason": reason,
+                    "cache.source_count": source_count,
+                    "cache.content_version": self.content_version,
+                    "cache.ttl_seconds": self.ttl_seconds,
+                    "cache.collection": self.collection_name,
+                }
+            )
+        except Exception:
+            # Never let observability break serving path.
+            pass
 
     async def ensure_collection(self) -> None:
         try:
@@ -227,12 +247,13 @@ class SemanticCacheService:
         dense_vector = self.vectorstore.dense_vectors([normalized_query])[0]
         source_urls = [s.url for s in sources if s.url]
 
+        point_id = str(uuid.uuid4())
         payload = {
             "normalized_query": normalized_query,
             "original_query": ask.query_text,
             "filter_signature": filter_signature,
             "answer": answer,
-            "sources": [s.model_dump() for s in sources],
+            "sources": [_compact_source(s) for s in sources],
             "retrieved_doc_ids": source_urls,
             "top_k": ask.limit,
             "model": model,
@@ -247,11 +268,15 @@ class SemanticCacheService:
                 collection_name=self.collection_name,
                 points=[
                     models.PointStruct(
-                        id=str(uuid.uuid4()),
+                        id=point_id,
                         vector=dense_vector,
                         payload=payload,
                     )
                 ],
+                wait=True,
+            )
+            logger.info(
+                f"Semantic cache saved point_id={point_id} query='{normalized_query[:80]}'"
             )
             self._update_save_span(
                 write_success=True,
@@ -259,9 +284,47 @@ class SemanticCacheService:
                 source_count=len(sources),
             )
         except Exception as e:
-            logger.warning(f"Semantic cache write failed: {e}")
-            self._update_save_span(
-                write_success=False,
-                reason="write_error",
-                source_count=len(sources),
-            )
+            logger.warning(f"Semantic cache rich write failed: {e}")
+
+            # Retry with a minimal payload to avoid losing cache writes due payload limits.
+            try:
+                minimal_payload = {
+                    "normalized_query": normalized_query,
+                    "original_query": ask.query_text,
+                    "filter_signature": filter_signature,
+                    "answer": answer,
+                    "retrieved_doc_ids": source_urls,
+                    "top_k": ask.limit,
+                    "model": model,
+                    "finish_reason": finish_reason,
+                    "created_at": now,
+                    "expires_at": expires_at,
+                    "content_version": self.content_version,
+                }
+                fallback_point_id = str(uuid.uuid4())
+                await self.client.upsert(
+                    collection_name=self.collection_name,
+                    points=[
+                        models.PointStruct(
+                            id=fallback_point_id,
+                            vector=dense_vector,
+                            payload=minimal_payload,
+                        )
+                    ],
+                    wait=True,
+                )
+                logger.info(
+                    f"Semantic cache saved with minimal payload point_id={fallback_point_id} query='{normalized_query[:80]}'"
+                )
+                self._update_save_span(
+                    write_success=True,
+                    reason="stored_minimal_payload",
+                    source_count=len(sources),
+                )
+            except Exception as retry_error:
+                logger.warning(f"Semantic cache write retry failed: {retry_error}")
+                self._update_save_span(
+                    write_success=False,
+                    reason="write_error",
+                    source_count=len(sources),
+                )
