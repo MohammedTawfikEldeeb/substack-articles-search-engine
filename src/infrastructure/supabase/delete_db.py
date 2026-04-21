@@ -9,7 +9,6 @@ logger = setup_logging()
 
 
 def delete_all_tables() -> None:
-
     engine = init_engine()
     try:
         inspector = inspect(engine)

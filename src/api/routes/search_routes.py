@@ -70,7 +70,10 @@ async def ask_with_generation(request: Request, ask: AskRequest):
 
     # Step 2: Generate an answer
     answer_data = await generate_answer(
-        query=ask.query_text, contexts=results, provider=ask.provider, selected_model=ask.model
+        query=ask.query_text,
+        contexts=results,
+        provider=ask.provider,
+        selected_model=ask.model,
     )
 
     return AskResponse(
@@ -111,7 +114,10 @@ async def ask_with_generation_stream(request: Request, ask: AskRequest):
 
     # Step 2: Get the streaming generator
     stream_func = get_streaming_function(
-        provider=ask.provider, query=ask.query_text, contexts=results, selected_model=ask.model
+        provider=ask.provider,
+        query=ask.query_text,
+        contexts=results,
+        selected_model=ask.model,
     )
 
     # Step 3: Wrap streaming generator

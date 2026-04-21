@@ -7,7 +7,7 @@ on:
 
     branches:
       - main
-    
+
 
 jobs:
   lint-and-test:
@@ -54,10 +54,7 @@ jobs:
         run: uv sync --all-groups
 
       - name: Run pre-commit hooks
-        run: |
-          source .venv/bin/activate
-          pre-commit install
-          pre-commit run --all-files
+        run: uv run --with pre-commit pre-commit run --all-files
 
       # 🔹 Debug step: check that DB env vars are set
       - name: Check DB environment variables

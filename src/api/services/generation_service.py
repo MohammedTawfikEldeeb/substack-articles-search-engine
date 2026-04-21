@@ -4,7 +4,10 @@ import opik
 
 from src.api.models.api_models import SearchResult
 from src.api.models.provider_models import MODEL_REGISTRY
-from src.api.services.providers.openrouter_service import generate_openrouter, stream_openrouter
+from src.api.services.providers.openrouter_service import (
+    generate_openrouter,
+    stream_openrouter,
+)
 from src.api.services.providers.utils.evaluation_metrics import evaluate_metrics
 from src.api.services.providers.utils.prompts import build_research_prompt
 from src.utils.logger_util import setup_logging
@@ -39,7 +42,9 @@ async def generate_answer(
 
     provider_lower = provider.lower()
     if provider_lower != "openrouter":
-        raise ValueError(f"Unknown provider: {provider}. Only 'openrouter' is supported.")
+        raise ValueError(
+            f"Unknown provider: {provider}. Only 'openrouter' is supported."
+        )
 
     config = MODEL_REGISTRY.get_config(provider_lower)
 
@@ -50,7 +55,9 @@ async def generate_answer(
         metrics_results = await evaluate_metrics(answer, prompt)
         logger.info(f"G-Eval Faithfulness → {metrics_results}")
     except Exception as e:
-        logger.error(f"Error occurred while generating answer from {provider_lower}: {e}")
+        logger.error(
+            f"Error occurred while generating answer from {provider_lower}: {e}"
+        )
         raise
 
     return {
@@ -86,7 +93,9 @@ def get_streaming_function(
     prompt = build_research_prompt(contexts, query=query)
     provider_lower = provider.lower()
     if provider_lower != "openrouter":
-        raise ValueError(f"Unknown provider: {provider}. Only 'openrouter' is supported.")
+        raise ValueError(
+            f"Unknown provider: {provider}. Only 'openrouter' is supported."
+        )
 
     config = MODEL_REGISTRY.get_config(provider_lower)
     logger.info(f"Using model config: {config}")

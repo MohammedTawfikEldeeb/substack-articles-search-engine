@@ -9,7 +9,6 @@ logger = setup_logging()
 
 
 def create_table() -> None:
-
     engine = init_engine()
     try:
         # Create an inspector to check existing tables

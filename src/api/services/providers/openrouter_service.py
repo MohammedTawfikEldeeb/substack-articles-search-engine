@@ -14,8 +14,6 @@ from src.utils.logger_util import setup_logging
 logger = setup_logging()
 
 
-
-
 openrouter_key = settings.openrouter.api_key
 openrouter_url = settings.openrouter.api_url
 async_openrouter_client = AsyncOpenAI(base_url=openrouter_url, api_key=openrouter_key)
@@ -166,5 +164,3 @@ def stream_openrouter(
             yield "__truncated__"
 
     return gen()
-
-

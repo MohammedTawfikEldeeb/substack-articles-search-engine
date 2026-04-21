@@ -8,13 +8,17 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from src.config import settings
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class SubstackArticle(Base):
     __tablename__ = settings.supabase_db.table_name
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(
+        BigInteger, primary_key=True, index=True, autoincrement=True
+    )
     uuid: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         default=uuid.uuid4,
@@ -28,7 +32,9 @@ class SubstackArticle(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     url: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    published_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
         server_default=func.now(),

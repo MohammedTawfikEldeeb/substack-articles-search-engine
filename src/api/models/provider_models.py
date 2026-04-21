@@ -10,7 +10,8 @@ class ProviderSort(str, Enum):
 class ModelConfig(BaseModel):
     primary_model: str = Field(default="", description="The initial model requested")
     candidate_models: list[str] = Field(
-        default_factory=list, description="List of candidate models for fallback or routing"
+        default_factory=list,
+        description="List of candidate models for fallback or routing",
     )
     provider_sort: ProviderSort = Field(
         default=ProviderSort.latency, description="How to sort candidate models"
@@ -43,8 +44,6 @@ class ModelRegistry(BaseModel):
         return self.models[provider_lower]
 
 
-
-
 MODEL_REGISTRY = ModelRegistry(
     models={
         "openrouter": ModelConfig(
@@ -56,5 +55,3 @@ MODEL_REGISTRY = ModelRegistry(
         ),
     }
 )
-
-

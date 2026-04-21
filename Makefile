@@ -1,19 +1,19 @@
 export PATH := $(CURDIR)\.venv\Scripts;$(PATH)
 
 ## supabase
-supabase-create: 
+supabase-create:
 	@echo "Creating Supabase database..."
 	uv run python -m src.infrastructure.supabase.create_db
 
-supabase-delete: 
+supabase-delete:
 	@echo "Deleting Supabase database..."
 	uv run python -m src.infrastructure.supabase.delete_db
 
-ingest-rss-articles-flow: 
+ingest-rss-articles-flow:
 	@echo "Running RSS ingestion locally (no scheduler)..."
 	uv run -m src.pipelines.flows.rss_ingestion_flow
 
-ingest-embeddings-flow: 
+ingest-embeddings-flow:
 	@echo "Running embeddings ingestion locally (no scheduler)..."
 	uv run -m src.pipelines.flows.embeddings_ingestion_flow
 

@@ -10,7 +10,6 @@ logger = setup_logging()
 
 
 def init_engine() -> Engine:
-
     try:
         db = settings.supabase_db
         if not all([db.user, db.password, db.host, db.port, db.name]):
@@ -22,9 +21,7 @@ def init_engine() -> Engine:
             )
 
         logger.info(f"Connecting to database {db.name} at {db.host}:{db.port}")
-        engine_url = (
-            f"postgresql://{db.user}:{db.password.get_secret_value()}@{db.host}:{db.port}/{db.name}"
-        )
+        engine_url = f"postgresql://{db.user}:{db.password.get_secret_value()}@{db.host}:{db.port}/{db.name}"
         logger.debug(f"Using engine URL: {engine_url}")
 
         engine = create_engine(
@@ -62,7 +59,6 @@ def init_engine() -> Engine:
 
 
 def init_session(engine: Engine | None = None) -> Session:
-
     try:
         if engine is None:
             logger.debug("No engine provided; creating a new engine")

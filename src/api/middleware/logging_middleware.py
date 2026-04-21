@@ -9,15 +9,14 @@ logger = setup_logging()
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-
-
     async def dispatch(self, request: Request, call_next):
- 
         start_time = time.time()
         client_host = request.client.host if request.client else "unknown"
 
         safe_headers = {
-            k: v for k, v in request.headers.items() if k.lower() not in {"authorization", "cookie"}
+            k: v
+            for k, v in request.headers.items()
+            if k.lower() not in {"authorization", "cookie"}
         }
 
         logger.info(

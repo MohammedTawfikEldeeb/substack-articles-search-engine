@@ -8,8 +8,6 @@ from src.utils.logger_util import setup_logging
 logger = setup_logging()
 
 
-
-
 async def evaluate_metrics(output: str, context: str) -> dict:
     """Evaluate multiple metrics for a given LLM output.
     Metrics included: faithfulness, coherence, completeness.
@@ -35,9 +33,21 @@ async def evaluate_metrics(output: str, context: str) -> dict:
     if not getattr(settings.openrouter, "api_key", None):
         logger.info("OpenRouter API key not set. Skipping metrics evaluation.")
         return {
-            "faithfulness": {"score": None, "reason": "Skipped – no API key", "failed": True},
-            "coherence": {"score": None, "reason": "Skipped – no API key", "failed": True},
-            "completeness": {"score": None, "reason": "Skipped – no API key", "failed": True},
+            "faithfulness": {
+                "score": None,
+                "reason": "Skipped – no API key",
+                "failed": True,
+            },
+            "coherence": {
+                "score": None,
+                "reason": "Skipped – no API key",
+                "failed": True,
+            },
+            "completeness": {
+                "score": None,
+                "reason": "Skipped – no API key",
+                "failed": True,
+            },
         }
 
     free_judge_model = MODEL_REGISTRY.get_config("openrouter").primary_model
