@@ -39,7 +39,7 @@ export default function App() {
   const [tab, setTab] = useState("ask");
   const [askView, setAskView] = useState("none");
 
-  const [queryText, setQueryText] = useState("RAG and agentic applications");
+  const [queryText, setQueryText] = useState("Ai Agents");
   const [feedAuthor, setFeedAuthor] = useState("");
   const [feedName, setFeedName] = useState("");
   const [titleKeywords, setTitleKeywords] = useState("");
@@ -195,7 +195,12 @@ export default function App() {
           <div className="input-stack">
             <div>
               <label>Query</label>
-              <textarea value={queryText} onChange={(e) => setQueryText(e.target.value)} rows={4} />
+              <textarea
+                value={queryText}
+                onChange={(e) => setQueryText(e.target.value)}
+                placeholder="Ai Agents"
+                rows={4}
+              />
             </div>
 
             <div className="filters-grid">
