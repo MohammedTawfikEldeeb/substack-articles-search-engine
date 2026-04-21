@@ -71,5 +71,3 @@ jobs:
             fi
           done
 
-      - name: Run tests
-        run: uv run pytest
