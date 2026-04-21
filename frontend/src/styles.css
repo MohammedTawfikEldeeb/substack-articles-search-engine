@@ -85,6 +85,10 @@ h1 {
   align-items: start;
 }
 
+.workspace-grid.ask-layout {
+  grid-template-columns: minmax(300px, 0.85fr) minmax(460px, 1.15fr);
+}
+
 .filters-grid {
   display: grid;
   gap: 10px;
@@ -221,9 +225,23 @@ pre {
   background: linear-gradient(180deg, #fffdfb, #fff4e8);
   border: 1px solid #f1d8bf;
   color: var(--ink);
-  max-height: 290px;
+  max-height: 340px;
   overflow: auto;
   line-height: 1.6;
+}
+
+.output-panel.ask-active {
+  min-height: 540px;
+}
+
+.answer-heading {
+  margin-top: 6px;
+}
+
+.ask-markdown {
+  min-height: 420px;
+  max-height: 68vh;
+  padding: 16px 18px;
 }
 
 .markdown-output > :first-child {
@@ -246,6 +264,31 @@ pre {
 .markdown-output p,
 .markdown-output li {
   color: #473322;
+}
+
+.markdown-output table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.6rem 0;
+  font-size: 0.95rem;
+}
+
+.markdown-output thead tr {
+  background: #faead8;
+}
+
+.markdown-output th,
+.markdown-output td {
+  border: 1px solid #efcfb2;
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-output hr {
+  border: none;
+  border-top: 1px solid #dbba9b;
+  margin: 1rem 0;
 }
 
 .markdown-output code {
@@ -346,6 +389,11 @@ pre {
   .workspace-grid,
   .filters-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ask-markdown {
+    min-height: 320px;
+    max-height: 56vh;
   }
 
   .markdown-output,

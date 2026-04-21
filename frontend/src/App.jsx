@@ -189,7 +189,7 @@ export default function App() {
         <button className={tab === "titles" ? "active" : ""} onClick={() => setTab("titles")}>Unique Titles</button>
       </section>
 
-      <section className="workspace-grid">
+      <section className={`workspace-grid ${tab === "ask" ? "ask-layout" : "titles-layout"}`}>
         <article className="panel input-panel">
           <h2>Inputs</h2>
           <div className="input-stack">
@@ -261,7 +261,7 @@ export default function App() {
           </div>
         </article>
 
-        <article className="panel output-panel">
+        <article className={`panel output-panel ${tab === "ask" ? "ask-active" : ""}`}>
           <h2>Output</h2>
           {tab === "ask" && (
             <>
@@ -271,18 +271,22 @@ export default function App() {
 
               {askView === "non-streaming" && (
                 <>
-                  <h3>Non-Streaming Answer</h3>
-                  <article className="markdown-output">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{askResult || "_No response yet._"}</ReactMarkdown>
+                  <h3 className="answer-heading">Non-Streaming Answer</h3>
+                  <article className="markdown-output ask-markdown">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {askResult || "_No response yet._"}
+                    </ReactMarkdown>
                   </article>
                 </>
               )}
 
               {askView === "streaming" && (
                 <>
-                  <h3>Streaming Answer</h3>
-                  <article className="markdown-output">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamResult || "_No streaming chunks yet._"}</ReactMarkdown>
+                  <h3 className="answer-heading">Streaming Answer</h3>
+                  <article className="markdown-output ask-markdown">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {streamResult || "_No streaming chunks yet._"}
+                    </ReactMarkdown>
                   </article>
                 </>
               )}
